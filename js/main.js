@@ -11,9 +11,7 @@ var peer_connection = new Map();
 
 var pcConfig = {
   'iceServers': [
-    {
-    'urls': 'stun:stun3.l.google.com:19302'
-    },
+    {'urls': 'stun:stun3.l.google.com:19302'},
     {"urls":"turn:numb.viagenie.ca", "username":"webrtc@live.com", "credential":"muazkh"}
   ]
 };
@@ -50,7 +48,9 @@ socket.on('full', function(room) {
 
 socket.on('join', function (room, socket_id){
   console.log('Another peer made a request to join room ' + room);
+  addlog('Another peer made a request to join room ' + room);
   console.log('This peer is the initiator of room ' + room + '!');
+  addlog('This peer is the initiator of room ' + room + '!');
   current_connecting_socketID = socket_id
   isChannelReady = true;
   isInitiator= true;
@@ -84,7 +84,8 @@ function sendMessage(message, socket_id) {
 // This client receives a message
 socket.on('message', function(message, from_socketID, to_socketID) {
   console.log('Client received message:', message, from_socketID);
-  addlog('Client received message:', message, " from:  ",from_socketID, " to: ", to_socketID);
+  addlog('Client received message from:  ',from_socketID, " to: ", to_socketID);
+  addlog(message)
   if (message === 'got user media') {
     maybeStart();
   } else if (message.type === 'offer') {
@@ -117,7 +118,7 @@ var localVideo = document.querySelector('#localVideo');
 //var localAudio = document.querySelector('#localAudio');
 
 navigator.mediaDevices.getUserMedia({
-  //audio: true,
+  audio: true,
   video: true
 })
 .then(gotStream)
@@ -270,6 +271,6 @@ function addlog(data){
   if (typeof data == 'string'){
     logger.innerHTML += data + "<br />";
   }else{
-    logger.innerHTML += JSON.stringify(JSON.parse(data),null,2);   + '<br />';
+    logger.innerHTML += '<code>' + JSON.stringify(data, null,2) + '</code>'  + '<br />';
   }
 }
