@@ -9,6 +9,8 @@ const port = process.env.PORT || 80;
 var io = require('socket.io')(server);
 app.use(express.static(__dirname));
 
+const max_peers = 5
+
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '/index.html'));
 });
@@ -19,19 +21,10 @@ server.listen(port, ()=>{
 
 io.sockets.on('connection', function(socket) {
 
-  // convenience function to log server messages on the client
-  function log() {
-    var array = ['Message from server:'];
-    array.push.apply(array, arguments);
-    socket.emit('log', array);
-  }
-
-  socket.on('message', function(message) {
+  socket.on('message', function(message, room, to_socket_id) {
     console.log('Client said: ', message);
-    // for a real app, would be room-only (not broadcast)
-    socket.broadcast.emit('message', message);
+    socket.in(room).emit('message', message, socket.id, to_socket_id);
   });
-
   socket.on('create or join', function(room) {
     console.log('Received request to create or joining room ' + room);
 
@@ -45,25 +38,16 @@ io.sockets.on('connection', function(socket) {
       console.log('Client ID ' + socket.id + ' created room ' + room);
       socket.emit('created', room, socket.id);
 
-    } else if (numClients > 0) {
+    } else if (numClients > 0 && numClients < max_peers) {
       console.log('Client ID ' + socket.id + ' joined room ' + room);
-      io.sockets.in(room).emit('join', room);
+      io.sockets.in(room).emit('join', room, socket.id);
       socket.join(room);
+      io.sockets.in(room).emit("socket_list", Array.from(clientsInRoom).filter((value)=>value!=socket.id));
+      console.log(Array.from(clientsInRoom).filter((value)=>value==socket.id));
       socket.emit('joined', room, socket.id);
-      io.sockets.in(room).emit('ready');
+      //io.sockets.in(room).emit('ready');
     } else { // max two clients
       socket.emit('full', room);
-    }
-  });
-
-  socket.on('ipaddr', function() {
-    var ifaces = os.networkInterfaces();
-    for (var dev in ifaces) {
-      ifaces[dev].forEach(function(details) {
-        if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
-          socket.emit('ipaddr', details.address);
-        }
-      });
     }
   });
 

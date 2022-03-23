@@ -5,4 +5,28 @@ body {
 video {
   max-width: 100%;
   width: 480px;
+  padding: 3px;
 }
+
+video.local {
+  max-width: 100%;
+  width: 480px;
+  border: 3px white;
+  padding-right: 5px;
+}
+
+div.scrollvideos{
+  flex-direction: row;
+  background: #333;
+  white-space: nowrap;
+  overflow:auto;
+  align-content: center;
+  align-items: center;
+}
+
+div.log{
+  border: 2px black;
+  padding: 20px;
+  align-items: left;
+}
+
