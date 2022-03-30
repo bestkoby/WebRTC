@@ -172,12 +172,22 @@ window.onbeforeunload = function() {
 
 function createPeerConnection(socket_id) {
   try {
+    const newvideo = document.createElement("video");
+    newvideo.id = socket_id;
     var pc = new RTCPeerConnection(pcConfig);
     pc.onicecandidate = handleIceCandidate;
-    pc.onaddstream = handleRemoteStreamAdded;
+    pc.onaddstream = e => handleRemoteStreamAdded(e, newvideo) 
     pc.onremovestream = handleRemoteStreamRemoved;
     pc.addStream(localStream)
     peer_connection.set(socket_id, pc)
+    pc.onconnectionstatechange = function(event){
+      if(pc.iceConnectionState == 'disconnected' ){
+        pc.close(); 
+        const video_list = document.querySelector("#videos")
+        video_list.removeChild(newvideo);
+        addlog("user "+ socket_id+" left ");
+      };  
+    };
     console.log('Created RTCPeerConnnection');
   } catch (e) {
     console.log('Failed to create PeerConnection, exception: ' + e.message);
@@ -232,11 +242,10 @@ function onCreateSessionDescriptionError(error) {
   console.log('Failed to create session description: ' + error);
 }
 
-function handleRemoteStreamAdded(event) {
-  console.log('Remote stream added.');
-  const newvideo = document.createElement("video")
+function handleRemoteStreamAdded(event, newvideo) {
+  console.log('Remote stream added.'); 
   const video_list = document.querySelector("#videos")
-  newvideo.autoplay=true;
+  newvideo.autoplay=true; 
   video_list.appendChild(newvideo)
   //remoteStream = event.stream;
   newvideo.srcObject = event.stream;
