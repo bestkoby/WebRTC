@@ -136,6 +136,19 @@ function gotStream(stream) {
   }
 }
 
+const btn1 = document.getElementById('mutebutton1');
+const btn2 = document.getElementById('mutebutton2');
+btn1.addEventListener('click',function handleclick(){
+   localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled
+   btn1.innerHTML = btn1.innerHTML=="mute audio"? "unmute audio": "mute audio";
+   btn1.style.backgroundColor =  btn1.style.backgroundColor != "grey"? "grey":"red";
+} );
+btn2.addEventListener('click',function handleclick(){
+  localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled
+  btn2.innerHTML = btn2.innerHTML=="mute video"? "unmute video": "mute video";
+  btn2.style.backgroundColor =  btn2.style.backgroundColor != "grey"? "grey":"red";
+} );
+
 var constraints = {
   video: true,
   audio: true
